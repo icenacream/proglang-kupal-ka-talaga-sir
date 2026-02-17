@@ -1,0 +1,3 @@
+WELCOME10|10|true|Welcome discount
+STUDENT5|5|true|Student discount
+SUMMER15|15|true|Seasonal promo

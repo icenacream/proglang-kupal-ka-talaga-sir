@@ -1,0 +1,3 @@
+# username|password|role
+admin|0000|ADMIN
+staff|1234|STAFF

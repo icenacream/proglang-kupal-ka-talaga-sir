@@ -1,0 +1,6 @@
+# userId|fullName|email|password|createdAt
+U1771299461135|Rash Ian Sinag|rashiansinag@gmail.com|rashian|2026-02-17T11:37:41.158505500
+U1771319291161|rashian|rashian@gmail.com|090909|2026-02-17T17:08:11.185053800
+U1771319834308|ian|iansinag@gmail.com|090909|2026-02-17T17:17:14.329812200
+U1771320752002|bai|baisinag@gmail.com|1234|2026-02-17T17:32:32.005603200
+U1771321502859|dkjahdkqlk|jsbfjhseq|1234|2026-02-17T17:45:02.859758400

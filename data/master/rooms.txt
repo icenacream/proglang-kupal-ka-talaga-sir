@@ -1,0 +1,5 @@
+R1|Grand Plaza Hotel|Deluxe King|New York, USA|299.0|4.8|324|Free WiFi,Pool,Spa|2|5|true|assets/images/grand_plaza.jpg
+R2|Urban Luxury Suites|Executive Suite|Los Angeles, USA|249.0|4.6|198|Free WiFi,Gym,Bar|2|4|true|assets/images/urban_luxury.jpg
+R3|Beachside Paradise Resort|Ocean View|Miami, USA|399.0|4.9|452|Beach Access,Pool,Spa|2|3|true|assets/images/beachside_paradise.jpg
+R4|Boutique Heritage Inn|Heritage Single|San Francisco, USA|189.0|4.7|276|Free WiFi,Breakfast,Historic Building|1|2|true|assets/images/boutique_heritage.jpg
+R6|City Center Comfort Hotel|Standard Twin|Chicago, USA|159.0|4.5|143|Free WiFi,Parking,Pet Friendly|2|6|true|assets/images/city_center.jpg
