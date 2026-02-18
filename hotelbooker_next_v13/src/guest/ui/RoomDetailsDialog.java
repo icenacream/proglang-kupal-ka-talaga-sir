@@ -257,7 +257,7 @@ public class RoomDetailsDialog extends JDialog {
         close.addActionListener(e -> dispose());
         right.add(close);
     }
-
+    
     private void addField(JPanel parent, String label, JComponent field) {
         JLabel l = new JLabel(label);
         l.setAlignmentX(Component.LEFT_ALIGNMENT);
