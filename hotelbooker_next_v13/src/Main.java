@@ -15,9 +15,6 @@ public class Main {
 
         // main ui
         SwingUtilities.invokeLater(() -> {
-            // Theme on startup
-            SettingsStore.load();
-            ThemeManager.applyTheme(SettingsStore.getTheme());
             new GuestMenu();
         });
     }
