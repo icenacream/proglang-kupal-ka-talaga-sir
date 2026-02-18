@@ -215,7 +215,11 @@ public class Navbar extends JPanel {
         button.setBackground(new Color(245, 246, 250));
         button.setForeground(new Color(40, 40, 40));
         button.setFocusPainted(false);
-        
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        button.setBorder(new RoundedNavbarBorder(12));
+        button.setPreferredSize(new Dimension(140, 42));
+        button.setContentAreaFilled(false);
+        button.setOpaque(false);
 
         button.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
