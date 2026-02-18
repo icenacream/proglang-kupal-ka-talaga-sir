@@ -17,17 +17,10 @@ public class Navbar extends JPanel {
     private JButton logoutButton;
     private JLabel helloLabel;
     private JButton adminButton;
-    private JButton themeButton;
     private AdminButtonListener adminListener;
     private MyBookingsListener myBookingsListener;
     private FavoritesListener favoritesListener;
     private CartListener cartListener;
-
-    public interface ThemeListener {
-        void onThemeClicked();
-    }
-
-    private ThemeListener themeListener;
 
     public interface AuthListener {
         void onProfileClicked();
@@ -94,16 +87,8 @@ public class Navbar extends JPanel {
         JPanel right = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         right.setOpaque(false);
 
-        themeButton = createSecondaryButton("Theme");
-        themeButton.setPreferredSize(new Dimension(110, 42));
-        themeButton.addActionListener(e -> {
-            if (themeListener != null)
-                themeListener.onThemeClicked();
-        });
-
         adminButton = createAdminButton();
 
-        right.add(themeButton);
         right.add(adminButton);
         add(right, BorderLayout.EAST);
 
@@ -261,10 +246,6 @@ public class Navbar extends JPanel {
 
     public void setCartListener(CartListener listener) {
         this.cartListener = listener;
-    }
-
-    public void setThemeListener(ThemeListener listener) {
-        this.themeListener = listener;
     }
 
     public void setAuthListener(AuthListener listener) {

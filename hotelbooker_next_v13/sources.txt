@@ -3,6 +3,11 @@ src/guest/ui/AdminLoginDialog.java
 src/guest/ui/UIStyles.java
 src/guest/ui/Navbar.java
 src/guest/ui/GuestMenu.java
+src/guest/ui/GuestLoginPanel.java
+src/guest/ui/GuestRegisterPanel.java
+src/guest/ui/CalendarField.java
+src/guest/ui/RoundedTextField.java
+src/guest/ui/RoundBorder.java
 src/guest/ui/GuestSearchComponents.java
 src/guest/ui/GuestSearchBar.java
 src/guest/ui/RoomDetailsDialog.java
@@ -10,7 +15,6 @@ src/guest/ui/MyBookingsDialog.java
 src/guest/ui/LoginDialog.java
 src/guest/ui/RegisterDialog.java
 src/guest/ui/MyProfileDialog.java
-src/guest/ui/ThemeDialog.java
 src/guest/ui/CartDialog.java
 src/guest/service/GuestBookingService.java
 src/guest/service/CartService.java
@@ -45,9 +49,7 @@ src/common/util/PdfReceiptGenerator.java
 src/common/util/TextReceiptGenerator.java
 src/common/util/PrintUtils.java
 src/common/util/DataBackupUtils.java
-src/common/util/Theme.java
 src/common/util/SettingsStore.java
-src/common/util/ThemeManager.java
 src/common/util/CurrencyUtil.java
 src/common/util/CsvExportUtils.java
 src/common/session/SessionManager.java

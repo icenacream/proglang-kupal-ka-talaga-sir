@@ -30,11 +30,6 @@ public final class SettingsStore {
         }
     }
 
-    public static synchronized Theme getTheme() {
-        load();
-        return Theme.fromString(props.getProperty("theme", "LIGHT"));
-    }
-
     /** Raw getter for other settings (currency, conversion rates, etc.). */
     public static synchronized String getRaw(String key, String fallback) {
         load();
@@ -54,12 +49,6 @@ public final class SettingsStore {
         load();
         if (key == null || key.isBlank()) return;
         props.setProperty(key.trim(), value == null ? "" : value);
-        save();
-    }
-
-    public static synchronized void setTheme(Theme theme) {
-        load();
-        props.setProperty("theme", (theme == null ? Theme.LIGHT : theme).name());
         save();
     }
 

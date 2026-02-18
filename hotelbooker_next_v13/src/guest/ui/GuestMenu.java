@@ -56,7 +56,6 @@ public class GuestMenu extends JFrame {
         navbar.setMyBookingsListener(() -> openMyBookings());
         navbar.setFavoritesListener(() -> toggleFavorites());
         navbar.setCartListener(() -> openCart());
-        navbar.setThemeListener(() -> new ThemeDialog(GuestMenu.this).setVisible(true));
         navbar.setAuthListener(new Navbar.AuthListener() {
             @Override
             public void onProfileClicked() {
