@@ -33,6 +33,11 @@ public class GuestMenu extends JFrame {
     private Navbar navbar;
     private JComboBox<String> sortCombo;
 
+    // CardLayout for in-panel navigation
+    private CardLayout cardLayout;
+    private JPanel contentCards;
+    private MyBookingsDialog bookingsPanel;
+
     public GuestMenu() {
         bookingService = new GuestBookingService();
         currentRooms = bookingService.getAllAvailableRooms();
@@ -56,7 +61,6 @@ public class GuestMenu extends JFrame {
         navbar.setMyBookingsListener(() -> openMyBookings());
         navbar.setFavoritesListener(() -> toggleFavorites());
         navbar.setCartListener(() -> openCart());
-        navbar.setThemeListener(() -> new ThemeDialog(GuestMenu.this).setVisible(true));
         navbar.setAuthListener(new Navbar.AuthListener() {
             @Override
             public void onProfileClicked() {
@@ -67,6 +71,8 @@ public class GuestMenu extends JFrame {
             @Override
             public void onLogoutClicked() {
                 SessionManager.logout();
+                // If bookings panel is showing, go back to home on logout
+                cardLayout.show(contentCards, "home");
                 refreshSessionUI();
             }
         });
@@ -74,9 +80,16 @@ public class GuestMenu extends JFrame {
 
         refreshSessionUI();
 
-        // Create main scroll pane for content
-        JScrollPane scrollPane = createScrollPane();
-        add(scrollPane, BorderLayout.CENTER);
+        // Build bookings panel (embedded, not a dialog)
+        bookingsPanel = new MyBookingsDialog(bookingService,
+                () -> cardLayout.show(contentCards, "home"));
+
+        // CardLayout container: "home" = hotel grid, "bookings" = bookings panel
+        cardLayout   = new CardLayout();
+        contentCards = new JPanel(cardLayout);
+        contentCards.add(createScrollPane(), "home");
+        contentCards.add(bookingsPanel,      "bookings");
+        add(contentCards, BorderLayout.CENTER);
 
         setVisible(true);
     }
@@ -89,8 +102,8 @@ public class GuestMenu extends JFrame {
             if (!SessionManager.isLoggedIn())
                 return;
         }
-        MyBookingsDialog dialog = new MyBookingsDialog(this, bookingService);
-        dialog.setVisible(true);
+        bookingsPanel.onShow();
+        cardLayout.show(contentCards, "bookings");
     }
 
     private void openCart() {

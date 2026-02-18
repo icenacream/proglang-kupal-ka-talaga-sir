@@ -19,11 +19,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
- * Guest "My Bookings" dialog.
- * Lets guest search bookings by name and optionally cancel a confirmed booking.
+ * Guest "My Bookings" panel — embedded inside GuestMenu via CardLayout.
+ * No JDialog / JFrame; the panel is swapped in-place inside the main window.
  */
-public class MyBookingsDialog extends JDialog {
+public class MyBookingsDialog extends JPanel {
+
     private final GuestBookingService service;
+    private final Runnable onBack;          // called when user clicks ← Back
+
     private JTextField nameField;
     private JComboBox<String> statusFilter;
     private JTextField fromField;
@@ -33,86 +36,111 @@ public class MyBookingsDialog extends JDialog {
     private JLabel statusLabel;
     private User sessionUser;
 
-    public MyBookingsDialog(Window owner, GuestBookingService service) {
-        super(owner, "My Bookings", ModalityType.APPLICATION_MODAL);
+    public MyBookingsDialog(GuestBookingService service, Runnable onBack) {
         this.service = service;
+        this.onBack  = onBack;
+        setLayout(new BorderLayout());
+        setBackground(Color.WHITE);
         initUI();
     }
 
-    private void initUI() {
-        setSize(980, 560);
-        setLocationRelativeTo(getOwner());
-        setLayout(new BorderLayout());
+    // ── UI construction ────────────────────────────────────────────────────────
 
-        JPanel top = new JPanel(new BorderLayout(12, 12));
-        top.setBorder(BorderFactory.createEmptyBorder(16, 16, 12, 16));
+    private void initUI() {
+
+        // ── TOP PANEL ─────────────────────────────────────────────────────────
+        JPanel top = new JPanel();
+        top.setLayout(new BoxLayout(top, BoxLayout.Y_AXIS));
         top.setBackground(Color.WHITE);
+        top.setBorder(BorderFactory.createEmptyBorder(20, 28, 12, 28));
+
+        // Row 1 – back button + title
+        JPanel titleRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        titleRow.setOpaque(false);
+
+        JButton backBtn = makeSecondaryButton("\u2190 Back");
+        backBtn.addActionListener(e -> {
+            if (onBack != null) onBack.run();
+        });
 
         JLabel title = new JLabel("My Bookings");
         title.setFont(UIStyles.FONT_TITLE.deriveFont(22f));
-        top.add(title, BorderLayout.WEST);
+        title.setForeground(UIStyles.PRIMARY);
 
-        JPanel search = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        search.setOpaque(false);
-        nameField = new JTextField(22);
+        titleRow.add(backBtn);
+        titleRow.add(Box.createHorizontalStrut(8));
+        titleRow.add(title);
+        top.add(titleRow);
+        top.add(Box.createVerticalStrut(12));
+
+        // Row 2 – search / filter controls
+        JPanel searchRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+        searchRow.setOpaque(false);
+
+        nameField = new JTextField(18);
         nameField.setFont(UIStyles.FONT_PLAIN);
 
         statusFilter = new JComboBox<>(new String[]{"All", "CONFIRMED", "CANCELLED"});
         statusFilter.setFont(UIStyles.FONT_PLAIN);
+
         fromField = new JTextField(10);
         fromField.setFont(UIStyles.FONT_PLAIN);
         toField = new JTextField(10);
         toField.setFont(UIStyles.FONT_PLAIN);
 
-        JButton fromPickBtn = new JButton("\uD83D\uDCC5"); // calendar icon
-        fromPickBtn.setFont(UIStyles.FONT_PLAIN);
-        fromPickBtn.setToolTipText("Pick start date");
-        JButton toPickBtn = new JButton("\uD83D\uDCC5");
-        toPickBtn.setFont(UIStyles.FONT_PLAIN);
-        toPickBtn.setToolTipText("Pick end date");
+        JButton fromPickBtn = makeIconButton("\uD83D\uDCC5", "Pick start date");
+        JButton toPickBtn   = makeIconButton("\uD83D\uDCC5", "Pick end date");
+        JButton searchBtn   = makeSecondaryButton("Search");
 
-        JButton searchBtn = new JButton("Search");
-        searchBtn.setFont(UIStyles.FONT_PLAIN);
-        JButton closeBtn = new JButton("Close");
-        closeBtn.setFont(UIStyles.FONT_PLAIN);
-        search.add(new JLabel("Guest name:"));
-        search.add(nameField);
+        searchRow.add(makeLabel("Guest:"));
+        searchRow.add(nameField);
+        searchRow.add(Box.createHorizontalStrut(4));
+        searchRow.add(makeLabel("Status:"));
+        searchRow.add(statusFilter);
+        searchRow.add(Box.createHorizontalStrut(4));
+        searchRow.add(makeLabel("From:"));
+        searchRow.add(fromField);
+        searchRow.add(fromPickBtn);
+        searchRow.add(makeLabel("To:"));
+        searchRow.add(toField);
+        searchRow.add(toPickBtn);
+        searchRow.add(Box.createHorizontalStrut(8));
+        searchRow.add(searchBtn);
+        top.add(searchRow);
 
-        search.add(new JLabel("Status:"));
-        search.add(statusFilter);
-        search.add(new JLabel("From (YYYY-MM-DD):"));
-        search.add(fromField);
-        search.add(fromPickBtn);
-        search.add(new JLabel("To (YYYY-MM-DD):"));
-        search.add(toField);
-        search.add(toPickBtn);
+        // Separator below top panel
+        JSeparator sep = new JSeparator();
+        sep.setForeground(UIStyles.BORDER);
 
-        search.add(searchBtn);
-        search.add(closeBtn);
-        top.add(search, BorderLayout.EAST);
+        JPanel topWrapper = new JPanel(new BorderLayout());
+        topWrapper.setBackground(Color.WHITE);
+        topWrapper.add(top, BorderLayout.CENTER);
+        topWrapper.add(sep, BorderLayout.SOUTH);
+        add(topWrapper, BorderLayout.NORTH);
 
-        add(top, BorderLayout.NORTH);
-
-        // Table
-        String[] cols = {"Booking ID", "Guest", "Hotel", "Location", "Check-in", "Check-out", "Guests", "Total", "Status"};
+        // ── TABLE ─────────────────────────────────────────────────────────────
+        String[] cols = {"Booking ID", "Guest", "Hotel", "Location",
+                         "Check-in", "Check-out", "Guests", "Total", "Status"};
         model = new DefaultTableModel(cols, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
+            @Override public boolean isCellEditable(int row, int col) { return false; }
         };
         table = new JTable(model);
         table.setRowHeight(28);
         table.setFont(UIStyles.FONT_PLAIN);
         table.getTableHeader().setFont(UIStyles.FONT_BOLD);
+        table.setGridColor(UIStyles.BORDER);
+        table.setShowGrid(true);
+        table.setIntercellSpacing(new Dimension(1, 1));
 
         JScrollPane sp = new JScrollPane(table);
-        sp.setBorder(BorderFactory.createEmptyBorder(0, 16, 0, 16));
+        sp.setBorder(BorderFactory.createEmptyBorder(0, 28, 0, 28));
         add(sp, BorderLayout.CENTER);
 
-        // Bottom actions
-        JPanel bottom = new JPanel(new BorderLayout());
-        bottom.setBorder(BorderFactory.createEmptyBorder(12, 16, 16, 16));
+        // ── BOTTOM ACTION BAR ─────────────────────────────────────────────────
+        JPanel bottom = new JPanel(new BorderLayout(0, 0));
+        bottom.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(1, 0, 0, 0, UIStyles.BORDER),
+                BorderFactory.createEmptyBorder(10, 28, 14, 28)));
         bottom.setBackground(Color.WHITE);
 
         statusLabel = new JLabel("Enter your name then click Search.");
@@ -120,18 +148,11 @@ public class MyBookingsDialog extends JDialog {
         statusLabel.setForeground(UIStyles.MUTED);
         bottom.add(statusLabel, BorderLayout.WEST);
 
-        JButton cancelBtn = new JButton("Cancel Selected Booking");
-        cancelBtn.setFont(UIStyles.FONT_PLAIN);
-
-        JButton reschedBtn = new JButton("Reschedule");
-        reschedBtn.setFont(UIStyles.FONT_PLAIN);
-
-        JButton receiptPdfBtn = new JButton("Export Receipt (PDF)");
-        receiptPdfBtn.setFont(UIStyles.FONT_PLAIN);
-        JButton receiptTxtBtn = new JButton("Export Receipt (TXT)");
-        receiptTxtBtn.setFont(UIStyles.FONT_PLAIN);
-        JButton printBtn = new JButton("Print Receipt");
-        printBtn.setFont(UIStyles.FONT_PLAIN);
+        JButton printBtn      = makeSecondaryButton("Print Receipt");
+        JButton receiptTxtBtn = makeSecondaryButton("Export Receipt (TXT)");
+        JButton receiptPdfBtn = makeSecondaryButton("Export Receipt (PDF)");
+        JButton reschedBtn    = makeSecondaryButton("Reschedule");
+        JButton cancelBtn     = makePrimaryButton("Cancel Selected Booking");
 
         JPanel rightBtns = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         rightBtns.setOpaque(false);
@@ -143,11 +164,10 @@ public class MyBookingsDialog extends JDialog {
         bottom.add(rightBtns, BorderLayout.EAST);
         add(bottom, BorderLayout.SOUTH);
 
-        // Actions
+        // ── ACTIONS ───────────────────────────────────────────────────────────
         searchBtn.addActionListener(e -> refresh());
         nameField.addActionListener(e -> refresh());
         statusFilter.addActionListener(e -> refresh());
-        closeBtn.addActionListener(e -> dispose());
         cancelBtn.addActionListener(e -> cancelSelected());
         reschedBtn.addActionListener(e -> rescheduleSelected());
         receiptPdfBtn.addActionListener(e -> exportReceiptPdf());
@@ -160,11 +180,9 @@ public class MyBookingsDialog extends JDialog {
                 String v = fromField.getText() == null ? "" : fromField.getText().trim();
                 if (!v.isEmpty()) init = java.time.LocalDate.parse(v);
             } catch (Exception ignore) {}
-            java.time.LocalDate picked = DatePickerDialog.pick(this, init);
-            if (picked != null) {
-                fromField.setText(picked.toString());
-                refresh();
-            }
+            java.time.LocalDate picked = DatePickerDialog.pick(
+                    SwingUtilities.getWindowAncestor(this), init);
+            if (picked != null) { fromField.setText(picked.toString()); refresh(); }
         });
 
         toPickBtn.addActionListener(e -> {
@@ -173,22 +191,117 @@ public class MyBookingsDialog extends JDialog {
                 String v = toField.getText() == null ? "" : toField.getText().trim();
                 if (!v.isEmpty()) init = java.time.LocalDate.parse(v);
             } catch (Exception ignore) {}
-            java.time.LocalDate picked = DatePickerDialog.pick(this, init);
-            if (picked != null) {
-                toField.setText(picked.toString());
-                refresh();
-            }
+            java.time.LocalDate picked = DatePickerDialog.pick(
+                    SwingUtilities.getWindowAncestor(this), init);
+            if (picked != null) { toField.setText(picked.toString()); refresh(); }
         });
+    }
 
-        // If logged in, lock the name and auto-load
+    /**
+     * Called by GuestMenu each time the bookings card is shown,
+     * so the panel re-reads the current session user and refreshes data.
+     */
+    public void onShow() {
         sessionUser = SessionManager.getCurrentUser();
         if (sessionUser != null) {
             nameField.setText(sessionUser.getFullName());
             nameField.setEditable(false);
             nameField.setBackground(new Color(245, 246, 250));
             refresh();
+        } else {
+            nameField.setText("");
+            nameField.setEditable(true);
+            nameField.setBackground(Color.WHITE);
+            model.setRowCount(0);
+            statusLabel.setText("Enter your name then click Search.");
         }
     }
+
+    // ── Helper factories ───────────────────────────────────────────────────────
+
+    private JLabel makeLabel(String text) {
+        JLabel l = new JLabel(text);
+        l.setFont(UIStyles.FONT_PLAIN);
+        l.setForeground(UIStyles.TEXT);
+        return l;
+    }
+
+    private JButton makeSecondaryButton(String label) {
+        JButton btn = new JButton(label) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(getBackground());
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                super.paintComponent(g2);
+                g2.dispose();
+            }
+        };
+        btn.setFont(UIStyles.FONT_PLAIN);
+        btn.setBackground(new Color(245, 246, 250));
+        btn.setForeground(new Color(40, 40, 40));
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setContentAreaFilled(false);
+        btn.setOpaque(false);
+        btn.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(210, 212, 220), 1, true),
+                BorderFactory.createEmptyBorder(6, 14, 6, 14)));
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override public void mouseEntered(java.awt.event.MouseEvent e) {
+                btn.setBackground(new Color(235, 236, 240)); btn.repaint();
+            }
+            @Override public void mouseExited(java.awt.event.MouseEvent e) {
+                btn.setBackground(new Color(245, 246, 250)); btn.repaint();
+            }
+        });
+        return btn;
+    }
+
+    private JButton makePrimaryButton(String label) {
+        JButton btn = new JButton(label) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                Graphics2D g2 = (Graphics2D) g.create();
+                g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+                g2.setColor(getBackground());
+                g2.fillRoundRect(0, 0, getWidth(), getHeight(), 10, 10);
+                super.paintComponent(g2);
+                g2.dispose();
+            }
+        };
+        btn.setFont(UIStyles.FONT_BOLD);
+        btn.setBackground(UIStyles.PRIMARY);
+        btn.setForeground(Color.WHITE);
+        btn.setFocusPainted(false);
+        btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btn.setContentAreaFilled(false);
+        btn.setOpaque(false);
+        btn.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UIStyles.PRIMARY_DARK, 1, true),
+                BorderFactory.createEmptyBorder(6, 14, 6, 14)));
+        btn.addMouseListener(new java.awt.event.MouseAdapter() {
+            @Override public void mouseEntered(java.awt.event.MouseEvent e) {
+                btn.setBackground(UIStyles.PRIMARY_DARK); btn.repaint();
+            }
+            @Override public void mouseExited(java.awt.event.MouseEvent e) {
+                btn.setBackground(UIStyles.PRIMARY); btn.repaint();
+            }
+        });
+        return btn;
+    }
+
+    private JButton makeIconButton(String icon, String tooltip) {
+        JButton btn = makeSecondaryButton(icon);
+        btn.setToolTipText(tooltip);
+        btn.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(210, 212, 220), 1, true),
+                BorderFactory.createEmptyBorder(6, 8, 6, 8)));
+        return btn;
+    }
+
+    // ── Data / business logic (unchanged) ─────────────────────────────────────
 
     private void refresh() {
         model.setRowCount(0);
@@ -201,12 +314,12 @@ public class MyBookingsDialog extends JDialog {
         String statusSel = String.valueOf(statusFilter.getSelectedItem());
 
         java.time.LocalDate from = null;
-        java.time.LocalDate to = null;
+        java.time.LocalDate to   = null;
         try {
             String f = fromField.getText() == null ? "" : fromField.getText().trim();
-            String t = toField.getText() == null ? "" : toField.getText().trim();
+            String t = toField.getText()   == null ? "" : toField.getText().trim();
             if (!f.isEmpty()) from = java.time.LocalDate.parse(f);
-            if (!t.isEmpty()) to = java.time.LocalDate.parse(t);
+            if (!t.isEmpty()) to   = java.time.LocalDate.parse(t);
         } catch (Exception ex) {
             statusLabel.setText("Invalid date filter. Use YYYY-MM-DD.");
             return;
@@ -221,11 +334,11 @@ public class MyBookingsDialog extends JDialog {
                 if (b.getStatus() == null || !b.getStatus().equalsIgnoreCase(statusSel)) continue;
             }
             if (from != null && b.getCheckInDate() != null && b.getCheckInDate().isBefore(from)) continue;
-            if (to != null && b.getCheckInDate() != null && b.getCheckInDate().isAfter(to)) continue;
+            if (to   != null && b.getCheckInDate() != null && b.getCheckInDate().isAfter(to))   continue;
 
-            Room r = service.getRoomById(b.getRoomId());
+            Room r    = service.getRoomById(b.getRoomId());
             String hotel = r != null ? r.getHotelName() : "(Unknown)";
-            String loc = r != null ? r.getLocation() : "";
+            String loc   = r != null ? r.getLocation()  : "";
             model.addRow(new Object[]{
                     b.getBookingId(),
                     b.getGuestName(),
@@ -240,7 +353,9 @@ public class MyBookingsDialog extends JDialog {
             shown++;
         }
 
-        statusLabel.setText(shown == 0 ? "No bookings found for '" + guestName + "' (with current filters)." : ("Showing " + shown + " booking(s)."));
+        statusLabel.setText(shown == 0
+                ? "No bookings found for '" + guestName + "' (with current filters)."
+                : "Showing " + shown + " booking(s).");
     }
 
     private Booking getSelectedConfirmedBooking() {
@@ -258,7 +373,6 @@ public class MyBookingsDialog extends JDialog {
         Booking b = service.getBookingById(bookingId);
         if (b == null) {
             JOptionPane.showMessageDialog(this, "Booking not found.", "Error", JOptionPane.ERROR_MESSAGE);
-            return null;
         }
         return b;
     }
@@ -290,19 +404,21 @@ public class MyBookingsDialog extends JDialog {
     private void printReceipt() {
         Booking b = getSelectedConfirmedBooking();
         if (b == null) return;
-        Room r = service.getRoomById(b.getRoomId());
+        Room r   = service.getRoomById(b.getRoomId());
         String txt = TextReceiptGenerator.buildEmailStyleReceiptText(b, r, SessionManager.getCurrentUser());
-        PrintUtils.printText(this, "Receipt " + b.getBookingId(), txt);
+        PrintUtils.printText(SwingUtilities.getWindowAncestor(this), "Receipt " + b.getBookingId(), txt);
     }
 
     private void rescheduleSelected() {
         Booking b = getSelectedConfirmedBooking();
         if (b == null) return;
 
-        // Basic access control: if logged in, only allow rescheduling your own booking.
         User u = SessionManager.getCurrentUser();
-        if (u != null && b.getGuestName() != null && !b.getGuestName().equalsIgnoreCase(u.getFullName())) {
-            JOptionPane.showMessageDialog(this, "You can only reschedule your own bookings.", "Not allowed", JOptionPane.WARNING_MESSAGE);
+        if (u != null && b.getGuestName() != null
+                && !b.getGuestName().equalsIgnoreCase(u.getFullName())) {
+            JOptionPane.showMessageDialog(this,
+                    "You can only reschedule your own bookings.", "Not allowed",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -312,20 +428,23 @@ public class MyBookingsDialog extends JDialog {
             return;
         }
 
-        JDialog dlg = new JDialog(this, "Reschedule " + b.getBookingId(), ModalityType.APPLICATION_MODAL);
+        Window owner = SwingUtilities.getWindowAncestor(this);
+        JDialog dlg = new JDialog(owner, "Reschedule " + b.getBookingId(),
+                java.awt.Dialog.ModalityType.APPLICATION_MODAL);
         dlg.setSize(520, 260);
-        dlg.setLocationRelativeTo(this);
+        dlg.setLocationRelativeTo(owner);
         dlg.setLayout(new BorderLayout());
 
         JPanel form = new JPanel(new GridBagLayout());
         form.setBorder(BorderFactory.createEmptyBorder(14, 14, 14, 14));
         form.setBackground(Color.WHITE);
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = 0; gbc.gridy = 0; gbc.insets = new Insets(6, 6, 6, 6);
+        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.insets = new Insets(6, 6, 6, 6);
         gbc.anchor = GridBagConstraints.WEST;
 
-        JTextField inField = new JTextField(10);
-        JTextField outField = new JTextField(10);
+        JTextField inField     = new JTextField(10);
+        JTextField outField    = new JTextField(10);
         JTextField guestsField = new JTextField(6);
         inField.setFont(UIStyles.FONT_PLAIN);
         outField.setFont(UIStyles.FONT_PLAIN);
@@ -334,58 +453,47 @@ public class MyBookingsDialog extends JDialog {
         outField.setText(b.getCheckOutDate().toString());
         guestsField.setText(String.valueOf(b.getNumberOfGuests()));
 
-        JButton inPick = new JButton("\uD83D\uDCC5");
+        JButton inPick  = new JButton("\uD83D\uDCC5");
         JButton outPick = new JButton("\uD83D\uDCC5");
         inPick.setFont(UIStyles.FONT_PLAIN);
         outPick.setFont(UIStyles.FONT_PLAIN);
 
-        // Row: Hotel info
         gbc.gridx = 0; gbc.gridy++;
-        JLabel info = new JLabel("Room: " + r.getHotelName() + " (" + r.getLocation() + ")  •  Capacity " + r.getCapacity());
+        JLabel info = new JLabel("Room: " + r.getHotelName() + " (" + r.getLocation()
+                + ")  \u2022  Capacity " + r.getCapacity());
         info.setFont(UIStyles.FONT_PLAIN);
         gbc.gridwidth = 3;
         form.add(info, gbc);
         gbc.gridwidth = 1;
 
-        // Check-in
         gbc.gridx = 0; gbc.gridy++;
         JLabel l1 = new JLabel("Check-in (YYYY-MM-DD)");
         l1.setFont(UIStyles.FONT_PLAIN);
-        form.add(l1, gbc);
-        gbc.gridx = 1;
-        form.add(inField, gbc);
-        gbc.gridx = 2;
-        form.add(inPick, gbc);
+        form.add(l1, gbc); gbc.gridx = 1; form.add(inField, gbc);
+        gbc.gridx = 2; form.add(inPick, gbc);
 
-        // Check-out
         gbc.gridx = 0; gbc.gridy++;
         JLabel l2 = new JLabel("Check-out (YYYY-MM-DD)");
         l2.setFont(UIStyles.FONT_PLAIN);
-        form.add(l2, gbc);
-        gbc.gridx = 1;
-        form.add(outField, gbc);
-        gbc.gridx = 2;
-        form.add(outPick, gbc);
+        form.add(l2, gbc); gbc.gridx = 1; form.add(outField, gbc);
+        gbc.gridx = 2; form.add(outPick, gbc);
 
-        // Guests
         gbc.gridx = 0; gbc.gridy++;
         JLabel l3 = new JLabel("Guests");
         l3.setFont(UIStyles.FONT_PLAIN);
-        form.add(l3, gbc);
-        gbc.gridx = 1;
-        form.add(guestsField, gbc);
+        form.add(l3, gbc); gbc.gridx = 1; form.add(guestsField, gbc);
 
         dlg.add(form, BorderLayout.CENTER);
 
-        JPanel bottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-        bottom.setBackground(Color.WHITE);
-        JButton save = new JButton("Save");
+        JPanel dlgBottom = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
+        dlgBottom.setBackground(Color.WHITE);
+        JButton save   = new JButton("Save");
         JButton cancel = new JButton("Cancel");
         save.setFont(UIStyles.FONT_PLAIN);
         cancel.setFont(UIStyles.FONT_PLAIN);
-        bottom.add(cancel);
-        bottom.add(save);
-        dlg.add(bottom, BorderLayout.SOUTH);
+        dlgBottom.add(cancel);
+        dlgBottom.add(save);
+        dlg.add(dlgBottom, BorderLayout.SOUTH);
 
         inPick.addActionListener(e -> {
             java.time.LocalDate init = null;
@@ -408,14 +516,18 @@ public class MyBookingsDialog extends JDialog {
                 int ng = Integer.parseInt(guestsField.getText().trim());
                 boolean ok = service.rescheduleBooking(b.getBookingId(), ni, no, ng);
                 if (ok) {
-                    JOptionPane.showMessageDialog(dlg, "Booking updated.\n(New total will be reflected in receipts.)", "Done", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(dlg,
+                            "Booking updated.\n(New total will be reflected in receipts.)",
+                            "Done", JOptionPane.INFORMATION_MESSAGE);
                     dlg.dispose();
                     refresh();
                 } else {
-                    JOptionPane.showMessageDialog(dlg, service.getLastError(), "Cannot reschedule", JOptionPane.WARNING_MESSAGE);
+                    JOptionPane.showMessageDialog(dlg, service.getLastError(),
+                            "Cannot reschedule", JOptionPane.WARNING_MESSAGE);
                 }
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(dlg, "Please check your inputs.", "Invalid", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(dlg, "Please check your inputs.",
+                        "Invalid", JOptionPane.ERROR_MESSAGE);
             }
         });
 
@@ -425,29 +537,33 @@ public class MyBookingsDialog extends JDialog {
     private void cancelSelected() {
         int row = table.getSelectedRow();
         if (row < 0) {
-            JOptionPane.showMessageDialog(this, "Please select a booking to cancel.", "No selection", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Please select a booking to cancel.",
+                    "No selection", JOptionPane.INFORMATION_MESSAGE);
             return;
         }
         String bookingId = (String) model.getValueAt(row, 0);
-        String status = (String) model.getValueAt(row, 8);
+        String status    = (String) model.getValueAt(row, 8);
 
         if (!"CONFIRMED".equalsIgnoreCase(status)) {
-            JOptionPane.showMessageDialog(this, "Only CONFIRMED bookings can be canceled.", "Not allowed", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this,
+                    "Only CONFIRMED bookings can be canceled.", "Not allowed",
+                    JOptionPane.WARNING_MESSAGE);
             return;
         }
 
         int ok = JOptionPane.showConfirmDialog(this,
                 "Cancel booking " + bookingId + "?\nThis will make the room available again.",
-                "Confirm cancellation",
-                JOptionPane.YES_NO_OPTION);
+                "Confirm cancellation", JOptionPane.YES_NO_OPTION);
         if (ok != JOptionPane.YES_OPTION) return;
 
         boolean success = service.cancelBooking(bookingId);
         if (success) {
-            JOptionPane.showMessageDialog(this, "Booking canceled.", "Done", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Booking canceled.", "Done",
+                    JOptionPane.INFORMATION_MESSAGE);
             refresh();
         } else {
-            JOptionPane.showMessageDialog(this, "Could not cancel booking (not found).", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Could not cancel booking (not found).",
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
