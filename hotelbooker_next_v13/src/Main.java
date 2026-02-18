@@ -4,7 +4,7 @@ import javax.swing.*;
 import common.util.*;
 
 public class Main {
-    public static void main(String[] args) {    
+    public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             System.setProperty("apple.laf.useScreenMenuBar", "true");

@@ -36,7 +36,7 @@ public class GuestMenu extends JFrame {
     public GuestMenu() {
         bookingService = new GuestBookingService();
         currentRooms = bookingService.getAllAvailableRooms();
-        
+
         initializeUI();
     }
 
@@ -59,18 +59,6 @@ public class GuestMenu extends JFrame {
         navbar.setThemeListener(() -> new ThemeDialog(GuestMenu.this).setVisible(true));
         navbar.setAuthListener(new Navbar.AuthListener() {
             @Override
-            public void onLoginClicked() {
-                new LoginDialog(GuestMenu.this).setVisible(true);
-                refreshSessionUI();
-            }
-
-            @Override
-            public void onRegisterClicked() {
-                new RegisterDialog(GuestMenu.this).setVisible(true);
-                refreshSessionUI();
-            }
-
-            @Override
             public void onProfileClicked() {
                 new MyProfileDialog(GuestMenu.this).setVisible(true);
                 refreshSessionUI();
@@ -89,7 +77,7 @@ public class GuestMenu extends JFrame {
         // Create main scroll pane for content
         JScrollPane scrollPane = createScrollPane();
         add(scrollPane, BorderLayout.CENTER);
-        
+
         setVisible(true);
     }
 
@@ -98,7 +86,8 @@ public class GuestMenu extends JFrame {
             Toast.show(this, "Please login first to view your bookings.", Toast.Type.INFO);
             new LoginDialog(this).setVisible(true);
             refreshSessionUI();
-            if (!SessionManager.isLoggedIn()) return;
+            if (!SessionManager.isLoggedIn())
+                return;
         }
         MyBookingsDialog dialog = new MyBookingsDialog(this, bookingService);
         dialog.setVisible(true);
@@ -109,7 +98,8 @@ public class GuestMenu extends JFrame {
             Toast.show(this, "Please login first to use the cart.", Toast.Type.INFO);
             new LoginDialog(this).setVisible(true);
             refreshSessionUI();
-            if (!SessionManager.isLoggedIn()) return;
+            if (!SessionManager.isLoggedIn())
+                return;
         }
         CartDialog dialog = new CartDialog(this, bookingService);
         dialog.setVisible(true);
@@ -120,7 +110,8 @@ public class GuestMenu extends JFrame {
             Toast.show(this, "Please login first to use favorites.", Toast.Type.INFO);
             new LoginDialog(this).setVisible(true);
             refreshSessionUI();
-            if (!SessionManager.isLoggedIn()) return;
+            if (!SessionManager.isLoggedIn())
+                return;
         }
 
         showingFavorites = !showingFavorites;
@@ -145,63 +136,61 @@ public class GuestMenu extends JFrame {
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        
+
         return scrollPane;
     }
 
     private JPanel createHeaderSection() {
-    JPanel headerPanel = new JPanel();
-    headerPanel.setLayout(new BorderLayout());
-    headerPanel.setBackground(UIStyles.PRIMARY); // #1a73e8
-    headerPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 380));
-    headerPanel.setBorder(BorderFactory.createEmptyBorder(40, 50, 40, 50));
+        JPanel headerPanel = new JPanel();
+        headerPanel.setLayout(new BorderLayout());
+        headerPanel.setBackground(UIStyles.PRIMARY); // #1a73e8
+        headerPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 380));
+        headerPanel.setBorder(BorderFactory.createEmptyBorder(40, 50, 40, 50));
 
-    // Title
-    JLabel titleLabel = new JLabel("Find Your Perfect Stay");
-    titleLabel.setFont(UIStyles.FONT_TITLE.deriveFont(36f));
-    titleLabel.setForeground(Color.WHITE);
+        // Title
+        JLabel titleLabel = new JLabel("Find Your Perfect Stay");
+        titleLabel.setFont(UIStyles.FONT_TITLE.deriveFont(36f));
+        titleLabel.setForeground(Color.WHITE);
 
-    // Subtitle
-    JLabel subtitleLabel = new JLabel("Search from thousands of hotels worldwide");
-    subtitleLabel.setFont(UIStyles.FONT_PLAIN.deriveFont(14f));
-    subtitleLabel.setForeground(Color.WHITE);
+        // Subtitle
+        JLabel subtitleLabel = new JLabel("Search from thousands of hotels worldwide");
+        subtitleLabel.setFont(UIStyles.FONT_PLAIN.deriveFont(14f));
+        subtitleLabel.setForeground(Color.WHITE);
 
-    // Add title and subtitle to a wrapper panel to ensure full width
-    JPanel textPanel = new JPanel();
-    textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
-    textPanel.setBackground(new Color(26, 115, 232));
-    textPanel.add(titleLabel);
-    textPanel.add(Box.createVerticalStrut(8));
-    textPanel.add(subtitleLabel);
+        // Add title and subtitle to a wrapper panel to ensure full width
+        JPanel textPanel = new JPanel();
+        textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
+        textPanel.setBackground(new Color(26, 115, 232));
+        textPanel.add(titleLabel);
+        textPanel.add(Box.createVerticalStrut(8));
+        textPanel.add(subtitleLabel);
 
-    headerPanel.add(textPanel, BorderLayout.NORTH);
-    
-    // Spacer between text and search bar
-    JPanel spacerPanel = new JPanel();
-    spacerPanel.setBackground(new Color(26, 115, 232));
-    spacerPanel.setPreferredSize(new Dimension(0, 25));
-    headerPanel.add(spacerPanel, BorderLayout.CENTER);
+        headerPanel.add(textPanel, BorderLayout.NORTH);
 
-    // Add the new GuestSearchBar component
-    searchBar = new GuestSearchBar();
-    searchBar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 150));
-    searchBar.setBackground(UIStyles.BG);
+        // Spacer between text and search bar
+        JPanel spacerPanel = new JPanel();
+        spacerPanel.setBackground(new Color(26, 115, 232));
+        spacerPanel.setPreferredSize(new Dimension(0, 25));
+        headerPanel.add(spacerPanel, BorderLayout.CENTER);
 
-    // Set search listener with null checks
-    if (searchBar != null) {
-        searchBar.setSearchListener((destination, checkIn, checkOut, guests) -> {
-            if (destination != null && !destination.trim().isEmpty()) {
-                handleSearch(destination);
-            }
-        });
+        // Add the new GuestSearchBar component
+        searchBar = new GuestSearchBar();
+        searchBar.setMaximumSize(new Dimension(Integer.MAX_VALUE, 150));
+        searchBar.setBackground(UIStyles.BG);
+
+        // Set search listener with null checks
+        if (searchBar != null) {
+            searchBar.setSearchListener((destination, checkIn, checkOut, guests) -> {
+                if (destination != null && !destination.trim().isEmpty()) {
+                    handleSearch(destination);
+                }
+            });
+        }
+
+        headerPanel.add(searchBar, BorderLayout.SOUTH);
+
+        return headerPanel;
     }
-
-    headerPanel.add(searchBar, BorderLayout.SOUTH);
-
-    return headerPanel;
-}
-
-
 
     private void handleSearch(String destination) {
         destinationQuery = destination == null ? "" : destination.trim();
@@ -257,7 +246,7 @@ public class GuestMenu extends JFrame {
         });
         rightControls.add(favoritesToggle);
 
-        sortCombo = new JComboBox<>(new String[]{
+        sortCombo = new JComboBox<>(new String[] {
                 "Recommended",
                 "Price: Low to High",
                 "Price: High to Low",
@@ -299,12 +288,12 @@ public class GuestMenu extends JFrame {
         hotelGridPanel.setBackground(Color.WHITE);
         // Ensure grid panel has a minimum size
         hotelGridPanel.setMinimumSize(new Dimension(Integer.MAX_VALUE, 350));
-        
+
         refreshHotelGrid();
 
         // update count label whenever grid refreshes
         gridSection.putClientProperty("countLabel", countLabel);
-        
+
         gridSection.add(hotelGridPanel, BorderLayout.CENTER);
         return gridSection;
     }
@@ -351,15 +340,18 @@ public class GuestMenu extends JFrame {
     }
 
     private void applySort() {
-        if (currentRooms == null) return;
+        if (currentRooms == null)
+            return;
         String mode = sortCombo == null ? "Recommended" : (String) sortCombo.getSelectedItem();
-        if (mode == null || mode.equals("Recommended")) return;
+        if (mode == null || mode.equals("Recommended"))
+            return;
 
         // Copy so we don't mutate source list references unexpectedly
         currentRooms = new ArrayList<>(currentRooms);
         switch (mode) {
             case "Price: Low to High" -> currentRooms.sort(Comparator.comparingDouble(Room::getPricePerNight));
-            case "Price: High to Low" -> currentRooms.sort(Comparator.comparingDouble(Room::getPricePerNight).reversed());
+            case "Price: High to Low" ->
+                currentRooms.sort(Comparator.comparingDouble(Room::getPricePerNight).reversed());
             case "Rating: High to Low" -> currentRooms.sort((a, b) -> {
                 var sa = ReviewService.getStatsForRoom(a.getId());
                 var sb = ReviewService.getStatsForRoom(b.getId());
@@ -367,7 +359,8 @@ public class GuestMenu extends JFrame {
                 double rb = sb.count() > 0 ? sb.avg() : b.getRating();
                 return Double.compare(rb, ra);
             });
-            default -> {}
+            default -> {
+            }
         }
     }
 
@@ -379,7 +372,7 @@ public class GuestMenu extends JFrame {
 
         // apply sort before painting
         applySort();
-        
+
         for (Room room : currentRooms) {
             hotelGridPanel.add(createHotelCard(room));
         }
@@ -392,16 +385,16 @@ public class GuestMenu extends JFrame {
                 lbl.setText(prefix + ": " + (currentRooms == null ? 0 : currentRooms.size()));
             }
         }
-        
+
         // Revalidate and repaint the entire component hierarchy
         hotelGridPanel.revalidate();
         hotelGridPanel.repaint();
-        
+
         if (gridSection != null) {
             gridSection.revalidate();
             gridSection.repaint();
         }
-        
+
         if (mainPanel != null) {
             mainPanel.revalidate();
             mainPanel.repaint();
@@ -442,7 +435,7 @@ public class GuestMenu extends JFrame {
         priceTag.setBackground(Color.WHITE);
         priceTag.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
         priceTag.setOpaque(false);
-        
+
         JLabel priceLabel = new JLabel(room.getPriceTag());
         priceLabel.setFont(new Font("Segoe UI", Font.BOLD, 12));
         priceLabel.setForeground(Color.BLACK);
@@ -454,7 +447,8 @@ public class GuestMenu extends JFrame {
             public void componentResized(java.awt.event.ComponentEvent e) {
                 imageLabel.setBounds(0, 0, imagePanel.getWidth(), imagePanel.getHeight());
                 // Fit & scale image to panel size
-                imageLabel.setIcon(ImageUtils.loadAndScale(room.getImagePath(), imagePanel.getWidth(), imagePanel.getHeight()));
+                imageLabel.setIcon(
+                        ImageUtils.loadAndScale(room.getImagePath(), imagePanel.getWidth(), imagePanel.getHeight()));
                 priceTag.setLocation(Math.max(0, imagePanel.getWidth() - 120), 10);
             }
         });
@@ -485,7 +479,8 @@ public class GuestMenu extends JFrame {
                 Toast.show(this, "Login to save favorites.", Toast.Type.INFO);
                 new LoginDialog(this).setVisible(true);
                 refreshSessionUI();
-                if (!SessionManager.isLoggedIn()) return;
+                if (!SessionManager.isLoggedIn())
+                    return;
             }
             boolean nowFav = FavoritesService.toggle(SessionManager.getCurrentUser(), room.getId());
             refreshHeart.run();
@@ -540,25 +535,26 @@ public class GuestMenu extends JFrame {
         JPanel ratingPanel = new JPanel();
         ratingPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 0));
         ratingPanel.setOpaque(false);
-        
+
         JLabel ratingBadge = new JLabel(room.getRatingTag());
         ratingBadge.setFont(new Font("Segoe UI", Font.BOLD, 12));
         ratingBadge.setForeground(Color.WHITE);
         ratingBadge.setBackground(new Color(26, 115, 232));
         ratingBadge.setOpaque(true);
         ratingBadge.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
-        
+
         // Use dynamic review stats when available
         ReviewService.Stats stats = ReviewService.getStatsForRoom(room.getId());
         String ratingTag = stats.count() > 0 ? stats.tag() : room.getRatingTag();
         ratingBadge.setText(ratingTag);
-        JLabel reviewCount = new JLabel("(" + (stats.count() > 0 ? stats.count() : room.getReviewCount()) + " reviews)");
+        JLabel reviewCount = new JLabel(
+                "(" + (stats.count() > 0 ? stats.count() : room.getReviewCount()) + " reviews)");
         reviewCount.setFont(new Font("Segoe UI", Font.PLAIN, 11));
         reviewCount.setForeground(new Color(100, 100, 100));
-        
+
         ratingPanel.add(ratingBadge);
         ratingPanel.add(reviewCount);
-        
+
         gbc.insets = new Insets(8, 0, 8, 0);
         detailsPanel.add(ratingPanel, gbc);
 
@@ -566,7 +562,7 @@ public class GuestMenu extends JFrame {
         JPanel amenitiesPanel = new JPanel();
         amenitiesPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 6, 2));
         amenitiesPanel.setOpaque(false);
-        
+
         for (String amenity : room.getAmenities()) {
             JLabel amenityPill = new JLabel(amenity);
             amenityPill.setFont(new Font("Segoe UI", Font.PLAIN, 11));
@@ -576,7 +572,7 @@ public class GuestMenu extends JFrame {
             amenityPill.setBorder(BorderFactory.createEmptyBorder(5, 12, 5, 12));
             amenitiesPanel.add(amenityPill);
         }
-        
+
         gbc.weighty = 1.0;
         gbc.insets = new Insets(0, 0, 0, 0);
         detailsPanel.add(amenitiesPanel, gbc);
@@ -610,10 +606,11 @@ public class GuestMenu extends JFrame {
     }
 
     private void handleAdminModeSwitch() {
-        // Open Admin Login dialog as modal; on success open AdminMenu
+        // Open unified Login dialog as modal
         AdminLoginDialog dlg = new AdminLoginDialog(this);
         dlg.setVisible(true);
-        // AdminLoginDialog opens AdminMenu on success; do not auto-dispose here to avoid double-close
+        // Refresh session state after dialog closes (covers guest login success)
+        refreshSessionUI();
     }
 }
 
@@ -644,5 +641,3 @@ class RoundedPanel extends JPanel {
         }
     }
 }
-
-

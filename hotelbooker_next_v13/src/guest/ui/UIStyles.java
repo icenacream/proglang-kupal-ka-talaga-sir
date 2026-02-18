@@ -16,12 +16,17 @@ public final class UIStyles {
     public static Color BORDER = new Color(220, 220, 220);
     public static Color TEXT = new Color(50, 50, 50);
     public static Color MUTED = new Color(120, 120, 120);
+    public static Color SHADOW = new Color(0, 0, 0, 30);
+    public static Color SUCCESS = new Color(40, 167, 69);
+    public static Color ERROR = new Color(220, 53, 69);
+    public static Color PRIMARY_HOVER = new Color(20, 95, 200);
 
     public static final Font FONT_PLAIN = new Font("Segoe UI", Font.PLAIN, 13);
     public static final Font FONT_BOLD = new Font("Segoe UI", Font.BOLD, 13);
     public static final Font FONT_TITLE = new Font("Segoe UI", Font.BOLD, 24);
 
-    private UIStyles() {}
+    private UIStyles() {
+    }
 
     public static void stylePrimaryButton(JButton b) {
         b.setFont(FONT_BOLD);

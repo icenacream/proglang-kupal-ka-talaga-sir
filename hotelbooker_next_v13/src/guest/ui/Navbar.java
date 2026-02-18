@@ -13,8 +13,6 @@ public class Navbar extends JPanel {
     private JButton myBookingsButton;
     private JButton favoritesButton;
     private JButton cartButton;
-    private JButton loginButton;
-    private JButton registerButton;
     private JButton profileButton;
     private JButton logoutButton;
     private JLabel helloLabel;
@@ -32,9 +30,8 @@ public class Navbar extends JPanel {
     private ThemeListener themeListener;
 
     public interface AuthListener {
-        void onLoginClicked();
-        void onRegisterClicked();
         void onProfileClicked();
+
         void onLogoutClicked();
     }
 
@@ -79,8 +76,6 @@ public class Navbar extends JPanel {
         favoritesButton = createSecondaryButton("Favorites");
         cartButton = createSecondaryButton("Cart");
         profileButton = createSecondaryButton("My Profile");
-        loginButton = createSecondaryButton("Login");
-        registerButton = createSecondaryButton("Register");
         logoutButton = createSecondaryButton("Logout");
         helloLabel = new JLabel("");
         helloLabel.setFont(UIStyles.FONT_PLAIN);
@@ -91,8 +86,6 @@ public class Navbar extends JPanel {
         center.add(cartButton);
         center.add(profileButton);
         center.add(helloLabel);
-        center.add(loginButton);
-        center.add(registerButton);
         center.add(logoutButton);
 
         add(center, BorderLayout.CENTER);
@@ -103,7 +96,10 @@ public class Navbar extends JPanel {
 
         themeButton = createSecondaryButton("Theme");
         themeButton.setPreferredSize(new Dimension(110, 42));
-        themeButton.addActionListener(e -> { if (themeListener != null) themeListener.onThemeClicked(); });
+        themeButton.addActionListener(e -> {
+            if (themeListener != null)
+                themeListener.onThemeClicked();
+        });
 
         adminButton = createAdminButton();
 
@@ -112,14 +108,27 @@ public class Navbar extends JPanel {
         add(right, BorderLayout.EAST);
 
         // Auth actions
-        loginButton.addActionListener(e -> { if (authListener != null) authListener.onLoginClicked(); });
-        registerButton.addActionListener(e -> { if (authListener != null) authListener.onRegisterClicked(); });
-        profileButton.addActionListener(e -> { if (authListener != null) authListener.onProfileClicked(); });
-        logoutButton.addActionListener(e -> { if (authListener != null) authListener.onLogoutClicked(); });
+        profileButton.addActionListener(e -> {
+            if (authListener != null)
+                authListener.onProfileClicked();
+        });
+        logoutButton.addActionListener(e -> {
+            if (authListener != null)
+                authListener.onLogoutClicked();
+        });
 
-        myBookingsButton.addActionListener(e -> { if (myBookingsListener != null) myBookingsListener.onMyBookingsClicked(); });
-        favoritesButton.addActionListener(e -> { if (favoritesListener != null) favoritesListener.onFavoritesClicked(); });
-        cartButton.addActionListener(e -> { if (cartListener != null) cartListener.onCartClicked(); });
+        myBookingsButton.addActionListener(e -> {
+            if (myBookingsListener != null)
+                myBookingsListener.onMyBookingsClicked();
+        });
+        favoritesButton.addActionListener(e -> {
+            if (favoritesListener != null)
+                favoritesListener.onFavoritesClicked();
+        });
+        cartButton.addActionListener(e -> {
+            if (cartListener != null)
+                cartListener.onCartClicked();
+        });
     }
 
     public void setFavoritesListener(FavoritesListener l) {
@@ -140,7 +149,7 @@ public class Navbar extends JPanel {
      * Create the "Switch to Admin Mode" button with rounded styling
      */
     private JButton createAdminButton() {
-        JButton button = new JButton("Admin Login") {
+        JButton button = new JButton("Login") {
             @Override
             protected void paintComponent(Graphics g) {
                 Graphics2D g2d = (Graphics2D) g.create();
@@ -193,7 +202,8 @@ public class Navbar extends JPanel {
 
         // Preserve existing navigation by delegating to adminListener
         button.addActionListener(e -> {
-            if (adminListener != null) adminListener.onAdminButtonClicked();
+            if (adminListener != null)
+                adminListener.onAdminButtonClicked();
         });
 
         return button;
@@ -270,9 +280,8 @@ public class Navbar extends JPanel {
         cartButton.setEnabled(loggedIn);
         profileButton.setEnabled(loggedIn);
 
-        loginButton.setVisible(!loggedIn);
-        registerButton.setVisible(!loggedIn);
         logoutButton.setVisible(loggedIn);
+        adminButton.setVisible(!loggedIn);
         helloLabel.setText(loggedIn ? ("Hello, " + (displayName == null ? "Guest" : displayName)) : "");
         revalidate();
         repaint();
